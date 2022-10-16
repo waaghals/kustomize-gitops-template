@@ -1,0 +1,48 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base/podinfo
+
+configMapGenerator:
+  - name: environment
+    envs:
+      - environment.properties
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: environment
+      fieldPath: data.SHARED_HOST
+    targets:
+      - select:
+          kind: Ingress
+          labelSelector: "app=podinfo"
+        fieldPaths:
+          - spec.rules.0.host
+      - select:
+          kind: ManagedCertificate
+        fieldPaths:
+          - spec.domains.0
+  - source:
+      kind: ConfigMap
+      name: environment
+      fieldPath: data.INSTANCE_HOST
+    targets:
+      - select:
+          kind: Ingress
+          labelSelector: "app=podinfo"
+        fieldPaths:
+          - spec.rules.1.host
+      - select:
+          kind: ManagedCertificate
+        fieldPaths:
+          - spec.domains.1
+
+components:
+  - ../../components/envs/prd
+  - ../../components/providers/gcp
+
+images:
+- name: ghcr.io/stefanprodan/podinfo
+  newTag: 6.1.0
