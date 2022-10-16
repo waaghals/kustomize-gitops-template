@@ -1,0 +1,79 @@
+name: Diff environments
+on: [pull_request]
+jobs:
+  environments-base:
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.set-environments.outputs.environments }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+    - name: Determine environments
+      id: set-environments
+      run: echo "environments=$(node .scripts/directories-as-json.mjs overlays)" >> $GITHUB_OUTPUT
+    - name: Log environments
+      run: echo "${{ steps.set-environments.outputs.environments }}"
+  environments-head:
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.set-environments.outputs.environments }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Determine environments
+      id: set-environments
+      run: echo "environments=$(node .scripts/directories-as-json.mjs overlays)" >> $GITHUB_OUTPUT
+    - name: Log environments
+      run: echo "${{ steps.set-environments.outputs.environments }}"
+  render-base:
+    runs-on: ubuntu-latest
+    needs: environments-base
+    strategy:
+      matrix: 
+        environment: ${{fromJson(needs.environments-base.outputs.environments)}}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+    - name: Kustomize build
+      run: kustomize build overlays/${{ matrix.environment }} > ${{ matrix.environment }}.yaml
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: base
+        path: ${{ matrix.environment }}.yaml
+  render-head:
+    runs-on: ubuntu-latest
+    needs: environments-head
+    strategy:
+      matrix: 
+        environment: ${{fromJson(needs.environments-head.outputs.environments)}}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Kustomize build
+      run: kustomize build overlays/${{ matrix.environment }} > ${{ matrix.environment }}.yaml
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: head
+        path: ${{ matrix.environment }}.yaml
+  compare:
+    runs-on: ubuntu-latest
+    needs: [render-head, render-base]
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: rendered
+    - name: Add diff to summary
+      continue-on-error: true # git diff will return non-success code
+      run: |
+        echo '# Differences over all environments' >> $GITHUB_STEP_SUMMARY
+        echo '' >> $GITHUB_STEP_SUMMARY
+        echo '```diff' >> $GITHUB_STEP_SUMMARY
+        git diff --no-index --no-renames --ignore-space-change -- ./rendered/base ./rendered/head >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
