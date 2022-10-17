@@ -1,167 +1,61 @@
 name: Rendered manifests
 on: [pull_request]
 jobs:
-  environments-base:
+  render:
     runs-on: ubuntu-latest
-    name: Environments (base)
-    outputs:
-      environments: ${{ steps.set-environments.outputs.environments }}
+    name: Render manifests
     steps:
-    - name: Checkout repository
+    - name: Checkout base
       uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.base.sha }}
-    - name: Determine environments
-      id: set-environments
-      run: echo "environments=$(node .scripts/directories-as-json.mjs overlays)" >> $GITHUB_OUTPUT
-    - name: Log environments
-      run: echo "${{ steps.set-environments.outputs.environments }}"
-  environments-head:
-    runs-on: ubuntu-latest
-    name: Environments (head)
-    outputs:
-      environments: ${{ steps.set-environments.outputs.environments }}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Determine environments
-      id: set-environments
-      run: echo "environments=$(node .scripts/directories-as-json.mjs overlays)" >> $GITHUB_OUTPUT
-    - name: Log environments
-      run: echo "${{ steps.set-environments.outputs.environments }}"
-  render-base:
-    runs-on: ubuntu-latest
-    needs: environments-base
-    name: Render base (${{ matrix.environment }})
-    strategy:
-      matrix: 
-        environment: ${{fromJson(needs.environments-base.outputs.environments)}}
-    steps:
-    - name: Checkout repository
+        path: base
+    - name: Checkout head
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.pull_request.base.sha }}
-    - name: Kustomize build
-      run: kustomize build overlays/${{ matrix.environment }} > ${{ matrix.environment }}.yaml
-    - name: Upload artifact
+        path: head
+    - name: Render base
+      run: node head/.scripts/render-manifests.mjs base/overlays rendered/base
+    - name: Render head
+      run: node head/.scripts/render-manifests.mjs head/overlays rendered/head
+    - name: Upload manifests
       uses: actions/upload-artifact@v3
       with:
-        name: rendered-base
-        path: ${{ matrix.environment }}.yaml
-  render-head:
-    runs-on: ubuntu-latest
-    needs: environments-head
-    name: Render head (${{ matrix.environment }})
-    strategy:
-      matrix: 
-        environment: ${{fromJson(needs.environments-head.outputs.environments)}}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Kustomize build
-      run: kustomize build overlays/${{ matrix.environment }} > ${{ matrix.environment }}.yaml
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: rendered-head
-        path: ${{ matrix.environment }}.yaml
-  combine:
-    runs-on: ubuntu-latest
-    needs: [environments-head, environments-base]
-    outputs:
-      pairs: ${{ steps.combine-environments.outputs.pairs }}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Combine environments
-      id: combine-environments
-      run: echo "pairs=$(node .scripts/combine-environments.mjs ${{join(fromJson(needs.environments-base.outputs.environments))}} ${{join(fromJson(needs.environments-head.outputs.environments))}})" >> $GITHUB_OUTPUT
+        name: rendered-manifests
+        path: rendered/*
   diff:
     runs-on: ubuntu-latest
-    needs: [render-head, render-base, combine]
-    name: Diff (${{ matrix.environment }})
-    strategy:
-      matrix:
-        include: ${{fromJson(needs.combine.outputs.pairs)}}
+    needs: render
+    name: Compare environments
     steps:
-    - name: Download base artifacts
+    - name: Download manifests
       uses: actions/download-artifact@v3
       with:
-        name: rendered-base
-        path: rendered/base
-    - name: Download head artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: rendered-head
-        path: rendered/head
-    - name: Diff removed environment
-      continue-on-error: true
-      if: '!matrix.hasHead'
+        name: rendered-manifests
+        path: rendered
+    - name: Git diff
+      run: git diff --no-index --no-renames -- rendered/base rendered/head >> envs.diff || true
+    - name: Render summary
       run: |
-        git diff --no-index -- ./rendered/base/${{ matrix.environment }}.yaml /dev/null >> ${{ matrix.environment }}.diff
-        echo '# Removed ${{ matrix.environment }}' >> ${{ matrix.environment }}.md
-    - name: Diff changed environment
-      continue-on-error: true
-      if: 'matrix.hasBase && matrix.hasHead'
-      run: |
-        git diff --no-index -- ./rendered/base/${{ matrix.environment }}.yaml ./rendered/head/${{ matrix.environment }}.yaml >> ${{ matrix.environment }}.diff
-        echo '# Changed ${{ matrix.environment }}' >> ${{ matrix.environment }}.md
-    - name: Diff added environment
-      continue-on-error: true    
-      if: '!matrix.hasBase && matrix.hasHead'
-      run: |
-        git diff --no-index -- /dev/null ${{ matrix.environment }}.yaml >> ${{ matrix.environment }}.diff
-        echo '# Added ${{ matrix.environment }}' >> ${{ matrix.environment }}.md
-    - name: Add 'removed' heading
-      if: '!matrix.hasHead'
-      run: echo '# Removed ${{ matrix.environment }}' >> ${{ matrix.environment }}.md
-    - name: Add 'changed' heading
-      if: 'matrix.hasBase && matrix.hasHead'
-      run: echo '# Changed ${{ matrix.environment }}' >> ${{ matrix.environment }}.md
-    - name: Add 'Added' heading
-      if: '!matrix.hasBase && matrix.hasHead'
-      run: echo '# Added ${{ matrix.environment }}' >> ${{ matrix.environment }}.md
-    - name: Add diff to markdown
-      run: |
-        echo '```diff' >> ${{ matrix.environment }}.md
-        cat ${{ matrix.environment }}.diff >> ${{ matrix.environment }}.md
-        echo '```' >> ${{ matrix.environment }}.md
-    - name: Upload markdown diff
-      uses: actions/upload-artifact@v3
-      with:
-        name: diff-markdown
-        path: ${{ matrix.environment }}.md
+        echo '```diff' >> $GITHUB_STEP_SUMMARY
+        cat envs.diff >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
   polaris:
     runs-on: ubuntu-latest
-    needs: [render-head, environments-head]
-    name: Polaris (${{ matrix.environment }})
-    strategy:
-      fail-fast: false
-      matrix:
-        environment: ${{fromJson(needs.environments-head.outputs.environments)}}
+    needs: render
+    name: Polaris
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - name: Checkout head
+      uses: actions/checkout@v3
+    - name: Download manifests
+      uses: actions/download-artifact@v3
+      with:
+        name: rendered-manifests
+        path: rendered
     - name: Setup polaris
       uses: fairwindsops/polaris/.github/actions/setup-polaris@master
       with:
         version: 5.0.0
-    - name: Download rendered manifests
-      uses: actions/download-artifact@v3
-      with:
-        name: rendered-head
-        path: manifests
     - name: Run Polaris
-      run: polaris audit --audit-path ./manifests/${{ matrix.environment }}.yaml --config polaris.yaml --format=pretty --set-exit-code-on-danger
-  summary:
-    runs-on: ubuntu-latest
-    needs: diff
-    name: Diff summary
-    steps:
-    - name: Download diffs
-      uses: actions/download-artifact@v3
-      with:
-        name: diff-markdown
-        path: diffs
-    - name: Render summary
-      run: cat diffs/* >> $GITHUB_STEP_SUMMARY
+      # For each file in rendered/head, add a separator and call polaris
+      run: find rendered/head | xargs -i sh -c 'echo "-----\n"; polaris audit --audit-path {} --config polaris.yaml --format=pretty --set-exit-code-on-danger {}'
