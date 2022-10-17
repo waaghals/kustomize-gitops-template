@@ -15,6 +15,12 @@ When the same setting is shared over many environments, it becomes a good candid
 # Recommended configuration
 Protect the main branch with the following rules. (Settings -> Branches)
 
+---
+**Branch name pattern**
+
+main
+
+---
 **Protect matching branches**
 - [x] Require a pull request before merging
 - - [x] Require approvals

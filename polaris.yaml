@@ -1,0 +1,63 @@
+checks:
+  # Defaults
+  hostIPCSet: danger
+  hostPIDSet: danger
+  notReadOnlyRootFilesystem: warning
+  privilegeEscalationAllowed: danger
+  runAsRootAllowed: warning
+  runAsPrivileged: danger
+  insecureCapabilities: warning
+  dangerousCapabilities: danger
+  hostNetworkSet: warning
+  hostPortSet: warning
+  livenessProbeMissing: warning
+  tagNotSpecified: danger
+  priorityClassNotSet: ignore
+  deploymentMissingReplicas: warning
+  missingPodDisruptionBudget: ignore
+
+  # Different levels
+  tlsSettingsMissing: ignore
+  cpuRequestsMissing: danger
+  memoryRequestsMissing: danger
+  cpuLimitsMissing: ignore
+  memoryLimitsMissing: danger
+  pullPolicyNotAlways: ignore
+
+  # Custom
+  labelNameEquals: ignore # need to fix kustomize name pre- and suffix
+  requiredCustomLabels: danger
+customChecks:
+  labelNameEquals:
+    successMessage: Label app.kubernetes.io/name matches metadata.name
+    failureMessage: Label app.kubernetes.io/name must match metadata.name
+    target: Controller
+    schema:
+      '$schema': http://json-schema.org/draft-07/schema
+      type: object
+      properties:
+        metadata:
+          type: object
+          required: ["labels"]
+          properties:
+            labels:
+              type: object
+              required: ["app.kubernetes.io/name"]
+              properties:
+                app.kubernetes.io/name:
+                  const: "{{ .metadata.name }}"
+  requiredCustomLabels:
+    successMessage: Contains required custom labels
+    failureMessage: Missing required custom labels
+    target: Controller
+    schema:
+      '$schema': http://json-schema.org/draft-07/schema
+      type: object
+      properties:
+        metadata:
+          type: object
+          required: ["labels"]
+          properties:
+            labels:
+              type: object
+              required: ["waaghals.dev/team"]
