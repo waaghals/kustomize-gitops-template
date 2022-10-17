@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: podinfo
 spec:
+  replicas: 2
   minReadySeconds: 3
   revisionHistoryLimit: 5
   progressDeadlineSeconds: 60
@@ -15,14 +16,17 @@ spec:
       app: podinfo
   template:
     metadata:
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9797"
       labels:
         app: podinfo
     spec:
       containers:
       - name: podinfod
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ['ALL']
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
         image: ghcr.io/stefanprodan/podinfo:6.2.1
         imagePullPolicy: IfNotPresent
         ports:

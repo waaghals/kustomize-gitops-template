@@ -37,6 +37,6 @@ components:
 
 images:
 - name: ghcr.io/stefanprodan/podinfo
-  newTag: latest
+  newTag: 6.2.1
 
 buildMetadata: [originAnnotations]
