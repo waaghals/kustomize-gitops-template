@@ -64,3 +64,19 @@ jobs:
           find rendered/head | xargs -i sh -c 'echo "-----\n"; \
           polaris audit --audit-path {} --config polaris.yaml \
           --format=pretty --set-exit-code-on-danger {}'
+  pluto:
+    runs-on: ubuntu-latest
+    needs: render
+    name: Pluto
+    steps:
+      - name: Download Pluto
+        uses: FairwindsOps/pluto/github-action@master
+      - name: Download manifests
+        uses: actions/download-artifact@v3
+        with:
+          name: rendered-manifests
+          path: rendered
+      - name: Use pluto
+        run: |
+          pluto detect-files -d rendered -o markdown \
+          --ignore-deprecations  >> $GITHUB_STEP_SUMMARY
