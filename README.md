@@ -30,6 +30,7 @@ main
 - - [ ] Require branches to be up to date before merging
     
     **Status checks that are required**
+    - Pluto
     - Polaris
     - Yamllint
 - [ ] Require conversation resolution before merging
