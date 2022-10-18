@@ -9,5 +9,5 @@ resources:
 
 labels:
   - pairs:
-      waaghals.dev/team: development-team-1
       app.kubernetes.io/name: podinfo
+      waaghals.dev/team: development-team-1
