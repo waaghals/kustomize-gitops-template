@@ -6,7 +6,7 @@ spec:
   template:
     spec:
       containers:
-      - name: podinfod
-        env:
-        - name: PODINFO_UI_COLOR
-          value: "#FF851B"
+        - name: podinfod
+          env:
+            - name: PODINFO_UI_COLOR
+              value: "#FF851B"

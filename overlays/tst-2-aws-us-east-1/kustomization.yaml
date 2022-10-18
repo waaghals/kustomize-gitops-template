@@ -36,5 +36,5 @@ components:
   - ../../components/providers/aws
 
 images:
-- name: ghcr.io/stefanprodan/podinfo
-  newTag: 6.2.1
+  - name: ghcr.io/stefanprodan/podinfo
+    newTag: 6.2.1

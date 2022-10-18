@@ -5,57 +5,62 @@ jobs:
     runs-on: ubuntu-latest
     name: Render manifests
     steps:
-    - name: Checkout base
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.event.pull_request.base.sha }}
-        path: base
-    - name: Checkout head
-      uses: actions/checkout@v3
-      with:
-        path: head
-    - name: Render base
-      run: node head/.scripts/render-manifests.mjs base/overlays rendered/base
-    - name: Render head
-      run: node head/.scripts/render-manifests.mjs head/overlays rendered/head
-    - name: Upload manifests
-      uses: actions/upload-artifact@v3
-      with:
-        name: rendered-manifests
-        path: rendered/*
+      - name: Checkout base
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+      - name: Checkout head
+        uses: actions/checkout@v3
+        with:
+          path: head
+      - name: Render base
+        run: node head/.scripts/render-manifests.mjs base/overlays rendered/base
+      - name: Render head
+        run: node head/.scripts/render-manifests.mjs head/overlays rendered/head
+      - name: Upload manifests
+        uses: actions/upload-artifact@v3
+        with:
+          name: rendered-manifests
+          path: rendered/*
   diff:
     runs-on: ubuntu-latest
     needs: render
     name: Compare environments
     steps:
-    - name: Download manifests
-      uses: actions/download-artifact@v3
-      with:
-        name: rendered-manifests
-        path: rendered
-    - name: Git diff
-      run: git diff --no-index --no-renames -- rendered/base rendered/head >> envs.diff || true
-    - name: Render summary
-      run: |
-        echo '```diff' >> $GITHUB_STEP_SUMMARY
-        cat envs.diff >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: Download manifests
+        uses: actions/download-artifact@v3
+        with:
+          name: rendered-manifests
+          path: rendered
+      - name: Git diff
+        run: |
+          git diff --no-index --no-renames -- \
+          rendered/base rendered/head >> envs.diff || true
+      - name: Render summary
+        run: |
+          echo '```diff' >> $GITHUB_STEP_SUMMARY
+          cat envs.diff >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
   polaris:
     runs-on: ubuntu-latest
     needs: render
     name: Polaris
     steps:
-    - name: Checkout head
-      uses: actions/checkout@v3
-    - name: Download manifests
-      uses: actions/download-artifact@v3
-      with:
-        name: rendered-manifests
-        path: rendered
-    - name: Setup polaris
-      uses: fairwindsops/polaris/.github/actions/setup-polaris@master
-      with:
-        version: 5.0.0
-    - name: Run Polaris
-      # For each file in rendered/head, add a separator and call polaris
-      run: find rendered/head | xargs -i sh -c 'echo "-----\n"; polaris audit --audit-path {} --config polaris.yaml --format=pretty --set-exit-code-on-danger {}'
+      - name: Checkout head
+        uses: actions/checkout@v3
+      - name: Download manifests
+        uses: actions/download-artifact@v3
+        with:
+          name: rendered-manifests
+          path: rendered
+      - name: Setup polaris
+        uses: fairwindsops/polaris/.github/actions/setup-polaris@master
+        with:
+          version: 5.0.0
+      - name: Run Polaris
+        # For each file in rendered/head, add a separator and call polaris
+        run: |
+          find rendered/head | xargs -i sh -c 'echo "-----\n"; \
+          polaris audit --audit-path {} --config polaris.yaml \
+          --format=pretty --set-exit-code-on-danger {}'

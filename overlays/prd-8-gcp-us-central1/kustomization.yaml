@@ -44,5 +44,5 @@ components:
   - ../../components/providers/gcp
 
 images:
-- name: ghcr.io/stefanprodan/podinfo
-  newTag: 6.1.0
+  - name: ghcr.io/stefanprodan/podinfo
+    newTag: 6.1.0

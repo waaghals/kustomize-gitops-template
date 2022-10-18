@@ -6,23 +6,23 @@ metadata:
     app: podinfo
 spec:
   rules:
-  - host: unreplaced.invalid
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: podinfo
-            port:
-              number: 80
-  - host: unreplaced.invalid
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: podinfo
-            port:
-              number: 80
+    - host: unreplaced.invalid
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: podinfo
+                port:
+                  number: 80
+    - host: unreplaced.invalid
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: podinfo
+                port:
+                  number: 80
