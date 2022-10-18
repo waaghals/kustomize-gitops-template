@@ -25,7 +25,7 @@ checks:
   pullPolicyNotAlways: ignore
 
   # Custom
-  labelNameEquals: ignore # need to fix kustomize name pre- and suffix
+  labelNameEquals: ignore  # need to fix kustomize name pre- and suffix
   requiredCustomLabels: danger
 customChecks:
   labelNameEquals:
