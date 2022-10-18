@@ -45,4 +45,4 @@ components:
 
 images:
   - name: ghcr.io/stefanprodan/podinfo
-    newTag: 6.1.0
+    newTag: 6.2.0
