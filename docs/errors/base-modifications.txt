@@ -1,0 +1,5 @@
+Changes to the base directory caused changes in the rendered manifests.
+These changes often change all (or many) environments at once.
+Please consider the effect of changing multiple environments at once.
+E.g. Adding a label to a pod, might seem trivial,
+but that means that all pods in all clusters will be changed simultaniously.
