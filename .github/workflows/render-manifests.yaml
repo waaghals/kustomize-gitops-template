@@ -27,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: render
     name: Compare environments
+    outputs:
+      empty: ${{ steps.save.outputs.empty }}
     steps:
       - name: Download manifests
         uses: actions/download-artifact@v3
@@ -37,6 +39,11 @@ jobs:
         run: |
           git diff --no-index --no-renames -- \
           rendered/base rendered/head >> envs.diff || true
+      - name: Save state
+        id: save
+        run: |
+          [ -s envs.diff ] && empty="false" || empty="true"
+          echo "empty=$empty" >> $GITHUB_OUTPUT
       - name: Render summary
         run: |
           echo '```diff' >> $GITHUB_STEP_SUMMARY
@@ -80,3 +87,23 @@ jobs:
         run: |
           pluto detect-files -d rendered -o markdown \
           --ignore-deprecations  >> $GITHUB_STEP_SUMMARY
+  base-modification:
+    runs-on: ubuntu-latest
+    needs: [render, diff]
+    name: Base modification
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Check base changes
+        id: changes
+        uses: tj-actions/changed-files@v32
+        with:
+          files: |
+            base/**
+      - name: Trigger error
+        if: |
+          steps.changes.outputs.any_changed == 'true'
+          && needs.diff.outputs.empty == 'false'
+        run: |
+          cat docs/errors/base-modifications.txt
+          exit 1
