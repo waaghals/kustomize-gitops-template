@@ -40,3 +40,11 @@ images:
     newTag: 6.2.1
 
 buildMetadata: [originAnnotations]
+
+patchesJson6902:
+  - target:
+      group: "autoscaling"
+      version: v2beta2
+      kind: HorizontalPodAutoscaler
+      name: podinfo
+    path: patch-hpa-version.yaml

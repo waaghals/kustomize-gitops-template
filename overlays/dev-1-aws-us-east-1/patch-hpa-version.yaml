@@ -1,0 +1,3 @@
+- op: replace
+  path: "/apiVersion"
+  value: autoscaling/v2beta1
