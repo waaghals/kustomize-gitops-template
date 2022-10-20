@@ -38,3 +38,6 @@ main
 - [ ] Require linear history 
 - [ ] Require deployments to succeed before merging 
 - [ ] Do not allow bypassing the above settings 
+
+# Examples
+This repository contains [example PRs](https://github.com/waaghals/gitops/pulls?q=is%3Apr+label%3Aexample) which show the functionality.
