@@ -1,0 +1,4 @@
+- ../../features/update-podinfo-to-6-2-1
+- ../../mixins/envs/stg
+- ../../mixins/providers/aws
+- ../../features/update-podinfo-to-6-2-0
