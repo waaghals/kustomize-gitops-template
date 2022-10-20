@@ -40,9 +40,6 @@ replacements:
           - spec.domains.1
 
 components:
-  - ../../components/envs/stg
-  - ../../components/providers/gcp
-
-images:
-  - name: ghcr.io/stefanprodan/podinfo
-    newTag: 6.2.0
+  - ../../mixins/envs/stg
+  - ../../mixins/providers/gcp
+  - ../../features/update-podinfo-to-6-2-0

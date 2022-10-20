@@ -32,11 +32,8 @@ replacements:
           - spec.rules.1.host
 
 components:
-  - ../../components/envs/dev
-  - ../../components/providers/aws
-
-images:
-  - name: ghcr.io/stefanprodan/podinfo
-    newTag: 6.2.1
+  - ../../mixins/envs/dev
+  - ../../mixins/providers/aws
+  - ../../features/update-podinfo-to-6-2-1
 
 buildMetadata: [originAnnotations]
