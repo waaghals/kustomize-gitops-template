@@ -5,8 +5,10 @@ Experimental gitops repository
 Applications manifests with settings which are equal amongst all environments
 These will be changes by overlays for each environment.
 
-## Components
+## Features/Mixins/Overrides as components
 Manifests which are shared over multiple environments, but not all environments.
+Features are promoted between environment while mixins are not.
+Overrides are similar to features, only they override changes from mixins.
 
 ## Overlays
 Manifests which are bespoke for that environment.
