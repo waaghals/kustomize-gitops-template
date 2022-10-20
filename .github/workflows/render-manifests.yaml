@@ -1,4 +1,4 @@
-name: Rendered manifests
+name: Render manifests
 on: [pull_request]
 jobs:
   render:

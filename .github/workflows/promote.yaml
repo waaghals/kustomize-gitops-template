@@ -1,0 +1,74 @@
+name: Promote
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Source environment
+        required: true
+        type: choice
+        options:
+          - dev-1-aws-us-east-1
+          - prd-5-aws-us-east-1
+          - prd-6-aws-eu-west-1
+          - prd-7-gcp-europe-west1
+          - prd-8-gcp-us-central1
+          - stg-3-aws-us-east-1
+          - stg-4-gcp-europe-west1
+          - tst-2-aws-us-east-1
+      target:
+        description: Target environment
+        required: true
+        type: choice
+        options:
+          - dev-1-aws-us-east-1
+          - prd-5-aws-us-east-1
+          - prd-6-aws-eu-west-1
+          - prd-7-gcp-europe-west1
+          - prd-8-gcp-us-central1
+          - stg-3-aws-us-east-1
+          - stg-4-gcp-europe-west1
+          - tst-2-aws-us-east-1
+      branch:
+        description: Branch name
+        required: true
+        type: string
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    name: Promote
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Extract source components
+        # get the components, ignore mixins, and write them to a file
+        run: |
+          yq '[.components[] | select(test("(../)*mixins/") == false)]' \
+          overlays/${{inputs.source}}/kustomization.yaml >> components.yaml
+      - name: Extract target components
+        # use all components from source
+        run: |
+          yq '.components' \
+          overlays/${{inputs.target}}/kustomization.yaml >> components.yaml
+      - name: Write new components
+        run: |
+          yq -i '.components |= load("components.yaml")' \
+          overlays/${{inputs.target}}/kustomization.yaml
+      - name: Sort components
+        run: |
+          yq -i '.components |= (unique | sort) ' \
+          overlays/${{inputs.target}}/kustomization.yaml
+      - name: Cleanup
+        run: rm components.yaml
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: Promote ${{ inputs.source }} to ${{ inputs.target }}
+          branch: ${{inputs.branch}}
+          delete-branch: true
+          title: Promote ${{ inputs.source }} to ${{ inputs.target }}
+          body: |
+            This automatically created pull request will not trigger workflows
+            with the `push` and/or `pull_request` triggers due
+            to [Github's recursing protection](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs).
+
+            Manually close and reopen this pull request so the required actions are executed.
