@@ -1,5 +1,5 @@
 name: Render manifests
-on: [pull_request]
+on: pull_request
 jobs:
   render:
     runs-on: ubuntu-latest
