@@ -1,13 +1,13 @@
-name: 'Lint'
-on: [pull_request]
+name: "Lint"
+on: pull_request
 jobs:
   yamllint:
-    name: 'Yamllint'
+    name: "Yamllint"
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
+      - name: "Checkout"
         uses: actions/checkout@master
-      - name: 'Yamllint'
+      - name: "Yamllint"
         uses: karancode/yamllint-github-action@master
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
