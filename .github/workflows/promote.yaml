@@ -10,6 +10,8 @@ on:
           - dev-1-aws-us-east-1
           - prd-5-aws-us-east-1
           - prd-6-aws-eu-west-1
+          - prd-7-gcp-europe-west1
+          - prd-8-gcp-us-central1
           - stg-3-aws-us-east-1
           - stg-4-gcp-europe-west1
           - tst-2-aws-us-east-1
@@ -21,7 +23,6 @@ on:
           - dev-1-aws-us-east-1
           - prd-5-aws-us-east-1
           - prd-6-aws-eu-west-1
-          - added
           - prd-7-gcp-europe-west1
           - prd-8-gcp-us-central1
           - stg-3-aws-us-east-1

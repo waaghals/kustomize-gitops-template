@@ -3,17 +3,33 @@ on: pull_request
 jobs:
   promotable-sync:
     runs-on: ubuntu-latest
-    name: Promotable sync (${{ matrix.type }})
+    name: Promotable ${{ matrix.type }}
     strategy:
       matrix:
         include:
           - type: source
             query: .on.workflow_dispatch.inputs.source.options
+            message: Promote workflow **source** environments are not in sync with environments from overlay directory
             file: source.yaml
           - type: target
             query: .on.workflow_dispatch.inputs.target.options
+            message: Promote workflow **target** environments are not in sync with environments from overlay directory
             file: target.yaml
     steps:
+      - name: Find comment
+        uses: sandeshjangam/comment-actions@v1
+        id: find_comment
+        with:
+          type: find
+          search_term: ${{ matrix.message }}
+          number: ${{ github.event.pull_request.number }}
+      - name: Delete comment
+        uses: sandeshjangam/comment-actions@v1
+        id: delete_comment
+        if: ${{ steps.find_comment.outputs.comment_id != '' }}
+        with:
+          type: delete
+          comment_id: ${{ steps.find_comment.outputs.comment_id }}
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -25,42 +41,13 @@ jobs:
           cd ..
       - name: Determine promotable overlays
         run: yq '${{ matrix.query }} | unique | sort' .github/workflows/promote.yaml > ${{ matrix.file }}
-      - name: Diff source
+      - name: Diff
         run: git diff --no-index --ignore-space-at-eol --no-renames overlays.yaml ${{ matrix.file }}
-      - name: Determine line
-        id: line
+      - name: Leave comment
         if: failure()
-        run: echo "line=$(yq '${{ matrix.query }} | key | line' .github/workflows/promote.yaml)" >> $GITHUB_OUTPUT
-      - name: Leave comments
-        if: failure()
-        run: |
-          gh api repos/$GITHUB_REPOSITORY/pulls/${{ github.event.pull_request.number }}/comments \
-          -f body="Promotable environments is not in sync with environments from overlay directory." \
-          -f path=".github/workflows/promote.yaml" \
-          -F line="23" \
-          -f side="RIGHT" \
-          -f commit_id="${{ github.event.pull_request.head.sha }}"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # skipped-promotions:
-  #   runs-on: ubuntu-latest
-  #   name: Render manifests
-  #   steps:
-  #     - name: Checkout base
-  #       uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ github.event.pull_request.base.sha }}
-  #         path: base
-  #     - name: Checkout head
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: head
-  #     - name: Render base
-  #       run: node head/.scripts/render-manifests.mjs base/overlays rendered/base
-  #     - name: Render head
-  #       run: node head/.scripts/render-manifests.mjs head/overlays rendered/head
-  #     - name: Upload manifests
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: rendered-manifests
-  #         path: rendered/*
+        uses: sandeshjangam/comment-actions@v1
+        id: create_delete_comment
+        with:
+          type: create
+          body: ${{ matrix.message }}
+          number: ${{ github.event.pull_request.number }}
