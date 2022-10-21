@@ -90,7 +90,7 @@ jobs:
   base-modification:
     runs-on: ubuntu-latest
     needs: [diff]
-    name: Base modification
+    name: Check base modification
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -100,17 +100,24 @@ jobs:
         with:
           files: |
             base/**
-      - name: Trigger error
+      - name: Add risky label
         if: |
           steps.changes.outputs.any_changed == 'true'
           && needs.diff.outputs.empty == 'false'
-        run: |
-          cat docs/errors/base-modifications.txt
-          exit 1
-  label:
+        uses: andymckay/labeler@master
+        with:
+          add-labels: "risky"
+      - name: Remove risky label
+        if: |
+          steps.changes.outputs.any_changed != 'true'
+          || needs.diff.outputs.empty != 'false'
+        uses: andymckay/labeler@master
+        with:
+          remove-labels: "risky"
+  side-effect:
     runs-on: ubuntu-latest
     needs: [diff]
-    name: Add label
+    name: Check side effects
     steps:
       - name: Add safe label
         if: needs.diff.outputs.empty == 'true'

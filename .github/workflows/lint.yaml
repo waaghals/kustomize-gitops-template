@@ -11,24 +11,3 @@ jobs:
         uses: karancode/yamllint-github-action@master
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  promotable-sync:
-    runs-on: ubuntu-latest
-    name: Validate promotable environments
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
-      - name: Determine overlays
-        run: |
-          cd overlays
-          find * -type d -exec echo "- {}" \; > ../overlays.yaml
-          cd ..
-      - name: Update source overlays
-        run: yq '.on.workflow_dispatch.inputs.source.options | unique | sort' .github/workflows/promote.yaml > source.yaml
-      - name: Update target overlays
-        run: yq '.on.workflow_dispatch.inputs.target.options | unique | sort' .github/workflows/promote.yaml > target.yaml
-      - name: Diff source
-        run: git diff --no-index --ignore-space-at-eol --no-renames overlays.yaml source.yaml
-      - name: Diff target
-        run: git diff --no-index --ignore-space-at-eol --no-renames overlays.yaml target.yaml
