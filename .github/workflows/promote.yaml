@@ -2,8 +2,14 @@ name: Promote
 on:
   workflow_dispatch:
     inputs:
+      application:
+        description: Application to promote
+        required: true
+        type: choice
+        options:
+          - podinfo
       source:
-        description: Source environment
+        description: From source environment
         required: true
         type: choice
         options:
@@ -16,7 +22,7 @@ on:
           - stg-4-gcp-europe-west1
           - tst-2-aws-us-east-1
       target:
-        description: Target environment
+        description: To target environment
         required: true
         type: choice
         options:
@@ -35,7 +41,7 @@ on:
       pull-request:
         description: Create pull request
         required: true
-        default: true
+        default: false
         type: boolean
 jobs:
   promote:
@@ -48,20 +54,20 @@ jobs:
         # get the components, ignore mixins, and write them to a file
         run: |
           yq '[.components[] | select(test("(../)*mixins/") == false)]' \
-          overlays/${{inputs.source}}/kustomization.yaml >> components.yaml
+          environments/${{inputs.source}}/${{inputs.application}}/kustomization.yaml >> components.yaml
       - name: Extract target components
         # use all components from source
         run: |
           yq '.components' \
-          overlays/${{inputs.target}}/kustomization.yaml >> components.yaml
+          environments/${{inputs.target}}/${{inputs.application}}/kustomization.yaml >> components.yaml
       - name: Write new components
         run: |
           yq -i '.components |= load("components.yaml")' \
-          overlays/${{inputs.target}}/kustomization.yaml
+          environments/${{inputs.target}}/${{inputs.application}}/kustomization.yaml
       - name: Sort components
         run: |
           yq -i '.components |= (unique | sort) ' \
-          overlays/${{inputs.target}}/kustomization.yaml
+          environments/${{inputs.target}}/${{inputs.application}}/kustomization.yaml
       - name: Cleanup
         run: rm components.yaml
       - name: Create Pull Request

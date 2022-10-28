@@ -7,14 +7,24 @@ jobs:
     strategy:
       matrix:
         include:
+          - type: application
+            query: .on.workflow_dispatch.inputs.application.options
+            message: |
+              Promote workflow __application__ is not in sync with applications from `./applications` directory.
+              Ensure that `.on.workflow_dispatch.inputs.application.options` in `.github/workflows/promote.yaml` contains all possible applications.
+            directory: applications
           - type: source
             query: .on.workflow_dispatch.inputs.source.options
-            message: Promote workflow **source** environments are not in sync with environments from overlay directory
-            file: source.yaml
+            message: |
+              Promote workflow __source__  environments are not in sync with environments from `./environments` directory.
+              Ensure that `.on.workflow_dispatch.inputs.source.options` in `.github/workflows/promote.yaml` contains all possible environments.
+            directory: environments
           - type: target
             query: .on.workflow_dispatch.inputs.target.options
-            message: Promote workflow **target** environments are not in sync with environments from overlay directory
-            file: target.yaml
+            message: |
+              Promote workflow __target__  environments are not in sync with environments from `./environments` directory.
+              Ensure that `.on.workflow_dispatch.inputs.target.options` in `.github/workflows/promote.yaml` contains all possible environments.
+            directory: environments
     steps:
       - name: Find comment
         uses: sandeshjangam/comment-actions@v1
@@ -34,15 +44,15 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
-      - name: Determine actual overlays
+      - name: Determine expected values
         run: |
-          cd environments
-          find * -maxdepth 0 -type d -exec echo "- {}" \; > ../overlays.yaml
+          cd ${{ matrix.directory }}
+          find * -maxdepth 0 -type d -exec echo "- {}" \; > ../expected.yaml
           cd ..
       - name: Determine promotable overlays
-        run: yq '${{ matrix.query }} | unique | sort' .github/workflows/promote.yaml > ${{ matrix.file }}
+        run: yq '${{ matrix.query }} | unique | sort' .github/workflows/promote.yaml > actual.yaml
       - name: Diff
-        run: git diff --no-index --ignore-space-at-eol --no-renames overlays.yaml ${{ matrix.file }}
+        run: git diff --no-index --ignore-space-at-eol --no-renames expected.yaml actual.yaml
       - name: Leave comment
         if: failure()
         uses: sandeshjangam/comment-actions@v1
