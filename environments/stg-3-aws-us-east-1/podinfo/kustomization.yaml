@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base/podinfo
+  - ../../../applications/podinfo
 
 configMapGenerator:
   - name: environment
@@ -20,10 +20,6 @@ replacements:
           labelSelector: "app=podinfo"
         fieldPaths:
           - spec.rules.0.host
-      - select:
-          kind: ManagedCertificate
-        fieldPaths:
-          - spec.domains.0
   - source:
       kind: ConfigMap
       name: environment
@@ -34,12 +30,8 @@ replacements:
           labelSelector: "app=podinfo"
         fieldPaths:
           - spec.rules.1.host
-      - select:
-          kind: ManagedCertificate
-        fieldPaths:
-          - spec.domains.1
 
 components:
-  - ../../mixins/envs/prd
-  - ../../mixins/providers/gcp
-  - ../../features/update-podinfo-to-6-1-0
+  - ../../../mixins/envs/stg
+  - ../../../mixins/providers/aws
+  - ../../../features/update-podinfo-to-6-2-0
