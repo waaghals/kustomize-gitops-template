@@ -38,11 +38,6 @@ on:
         description: Branch name
         required: true
         type: string
-      pull-request:
-        description: Create pull request
-        required: true
-        default: false
-        type: boolean
 jobs:
   promote:
     runs-on: ubuntu-latest
@@ -71,9 +66,9 @@ jobs:
       - name: Cleanup
         run: rm components.yaml
       - name: Create Pull Request
-        if: ${{ inputs.pull-request }}
         uses: peter-evans/create-pull-request@v4
         with:
+          draft: true
           commit-message: Promote ${{ inputs.source }} to ${{ inputs.target }}
           branch: ${{inputs.branch}}
           delete-branch: true
