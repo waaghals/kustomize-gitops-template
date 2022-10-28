@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base/podinfo
+  - ../../../applications/podinfo
 
 configMapGenerator:
   - name: environment
@@ -32,6 +32,6 @@ replacements:
           - spec.rules.1.host
 
 components:
-  - ../../mixins/envs/tst
-  - ../../mixins/providers/aws
-  - ../../features/update-podinfo-to-6-2-1
+  - ../../../mixins/envs/prd
+  - ../../../mixins/providers/aws
+  - ../../../features/update-podinfo-to-6-1-0

@@ -1,18 +1,18 @@
 # GitOps
 Experimental gitops repository
 
-## Base
-Applications manifests with settings which are equal amongst all environments
-These will be changes by overlays for each environment.
+## Applications
+Applications manifests with resources which are equal amongst all environments
+These manifests are included in the overlays per environment.
 
 ## Features/Mixins/Overrides as components
 Manifests which are shared over multiple environments, but not all environments.
 Features are promoted between environment while mixins are not.
 Overrides are similar to features, only they override changes from mixins.
 
-## Overlays
+## Environments
 Manifests which are bespoke for that environment.
-When the same setting is shared over many environments, it becomes a good candidate to promot to a component.
+When the same setting is shared over many environments, it becomes a good candidate to promote to a feature.
 
 # Recommended configuration
 Protect the main branch with the following rules. (Settings -> Branches)
