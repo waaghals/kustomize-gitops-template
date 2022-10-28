@@ -36,8 +36,8 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Determine actual overlays
         run: |
-          cd overlays
-          find * -type d -exec echo "- {}" \; > ../overlays.yaml
+          cd environments
+          find * -maxdepth 0 -type d -exec echo "- {}" \; > ../overlays.yaml
           cd ..
       - name: Determine promotable overlays
         run: yq '${{ matrix.query }} | unique | sort' .github/workflows/promote.yaml > ${{ matrix.file }}
