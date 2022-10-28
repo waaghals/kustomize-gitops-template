@@ -43,3 +43,4 @@ main
 
 # Examples
 This repository contains [example PRs](https://github.com/waaghals/gitops/pulls?q=is%3Apr+label%3Aexample) which show the functionality.
+
