@@ -14,32 +14,12 @@ Overrides are similar to features, only they override changes from mixins.
 Manifests which are bespoke for that environment.
 When the same setting is shared over many environments, it becomes a good candidate to promote to a feature.
 
-# Recommended configuration
-Protect the main branch with the following rules. (Settings -> Branches)
-
----
-**Branch name pattern**
-
-main
-
----
-**Protect matching branches**
-- [x] Require a pull request before merging
-- - [x] Require approvals
-- - [x] Dismiss stale pull request approvals when new commits are pushed
-- - [ ] Require review from Code Owners
-- [x] Require status checks to pass before merging 
-- - [ ] Require branches to be up to date before merging
-    
-    **Status checks that are required**
-    - Pluto
-    - Polaris
-    - Yamllint
-- [ ] Require conversation resolution before merging
-- [ ] Require signed commits 
-- [ ] Require linear history 
-- [ ] Require deployments to succeed before merging 
-- [ ] Do not allow bypassing the above settings 
+# Docs
+- [How to promote simple change](/docs/how-to-promote-simple-change.md)
+- [How to promote complex change](/docs/how-to-promote-complex-change.md)
+- [How to add application to a cluster](/docs/how-to-add-application-to-a-cluster.md)
+- [How to add new cluster](/docs/how-to-add-new-cluster.md)
+- [Configure Github Repositry](/docs/configure-github-repository.md)
 
 # Examples
 This repository contains [example PRs](https://github.com/waaghals/gitops/pulls?q=is%3Apr+label%3Aexample) which show the functionality.
