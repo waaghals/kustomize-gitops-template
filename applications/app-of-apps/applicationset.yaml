@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: applications
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/waaghals/kustomize-gitops-template
+      revision: main
+      directories:
+      - path: environments/**/*
+  template:
+    metadata:
+      name: '{{path[1]}}'
+      namespace: '{{path[2]}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/waaghals/kustomize-gitops-template
+        targetRevision: main
+        path: '{{path}}'
+      destination:
+        # name: '{{path[1]}}'
+        server: https://kubernetes.default.svc
+        namespace: '{{path[2]}}'
