@@ -42,4 +42,4 @@ replacements:
 components:
   - ../../../mixins/envs/prd
   - ../../../mixins/providers/gcp
-  - ../../../features/update-podinfo-to-6-1-0
+  - ../../../changes/update-podinfo-to-6-1-0

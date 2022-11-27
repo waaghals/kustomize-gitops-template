@@ -22,4 +22,4 @@ main
 - [ ] Require signed commits 
 - [ ] Require linear history 
 - [ ] Require deployments to succeed before merging 
-- [ ] Do not allow bypassing the above settings 
+- [ ] Do not allow bypassing the above settings
