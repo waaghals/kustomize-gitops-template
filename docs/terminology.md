@@ -17,7 +17,7 @@ To make a change which overwrites a mixin, see overrides.
 
 ## Overrides
 __Overrides__ are short-lived components which are promoted between environments.
-While similar to changes, thessssssssssssssssssssse are applied *after* modifications done by mixins.
+While similar to changes, these are applied *after* modifications done by mixins.
 
 ## Environment
 Different clusters to which applications are deployed.
