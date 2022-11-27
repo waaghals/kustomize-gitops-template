@@ -43,4 +43,4 @@ replacements:
 components:
   - ../../../mixins/envs/stg
   - ../../../mixins/providers/gcp
-  - ../../../features/update-podinfo-to-6-2-0
+  - ../../../changes/update-podinfo-to-6-2-0

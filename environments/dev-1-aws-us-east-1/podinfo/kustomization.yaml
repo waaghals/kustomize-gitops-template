@@ -34,4 +34,4 @@ replacements:
 components:
   - ../../../mixins/envs/dev
   - ../../../mixins/providers/aws
-  - ../../../features/update-podinfo-to-6-2-1
+  - ../../../changes/update-podinfo-to-6-2-1
